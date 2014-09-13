@@ -4,18 +4,19 @@
 #include <sstream>
 #include <vector>
 
-typedef struct pot {
+struct pot {
     int x, y;
 };
 
 class rct;
 pot newPot(int, int);
 pot randPot(int, int, int, int);
-rct *newRect(pot, pot);
+rct * newRect(pot, pot);
 bool isTaken(std::string);
 int randInt(int, int);
 int getInt(std::string, int, int);
 std::string getStr(std::string);
+void pPot(pot);
 void pRct(rct *);
 
 std::vector<rct *> rcts;
@@ -41,15 +42,9 @@ public:
 
     pot botLeft, topRight;
     std::string name;
-
-    void setValues(pot bl, pot tr) {
-        botLeft = bl;
-        topRight = tr;
-    }
-    void setName(std::string name) {name = name;}
 };
 
-rct  *newRect(pot botLeft, pot topRight) {
+rct  * newRect(pot botLeft, pot topRight) {
     std::string name;
     do {
         name = "";
@@ -57,7 +52,7 @@ rct  *newRect(pot botLeft, pot topRight) {
             name += randInt(97, 122);
         }
     } while (isTaken(name));
-    rct *res = new rct(botLeft, topRight, name);
+    rct * res = new rct(botLeft, topRight, name);
     return res;
 }
 
@@ -100,21 +95,61 @@ void pRct(rct * re) {
     std::cout << std::endl;
 }
 
+
 int main() {
     srand(time(NULL));
     int numRect = getInt("Number of rectangles to generate (0-25): ", 0, 25);
     for (int i = 0; i < numRect; ++i) {
         rcts.push_back(newRect(randPot(0, 800, 0, 600), randPot(0, 800, 0, 600)));
     }
-    for (rct * i : rcts) {pRct(i);}
-    std::cout << "Menu:\n";
-    std::cout << "1) Create a rectangle\n";
-    std::cout << "2) Delete a rectangle\n";
-    std::cout << "3) Find intersection\n";
-    std::cout << "4) Find Union\n";
-    std::cout << "5) Sort by name\n";
-    std::cout << "6) \n";
-    /*switch (getInt("Choice: ", 1, 6)) {
-    }*/
-    return 0;
+
+    while (true) {
+        std::cout << "Menu:\n";
+        std::cout << "1) Display all rectangles\n";
+        std::cout << "2) Create a rectangle\n";
+        std::cout << "3) Delete a rectangle\n";
+        std::cout << "4) Find intersection\n";
+        std::cout << "5) Find union\n";
+        std::cout << "6) Sort by name\n";
+        std::cout << "7) Point in rectangle\n";
+        std::cout << "8) Quit\n";
+
+        switch (getInt("Choice: ", 1, 8)) {
+            case 1:
+                for (rct *i : rcts) {pRct(i);}
+                break;
+
+            case 2:
+
+                break;
+
+            case 3:
+
+                break;
+
+            case 4:
+
+                break;
+
+            case 5:
+
+                break;
+
+            case 6:
+
+                break;
+
+            case 7:
+
+                break;
+
+            case 8:
+                return 0;
+
+            default:
+                break;
+
+
+        }
+    }
 }
