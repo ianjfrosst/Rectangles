@@ -3,21 +3,7 @@
 #include <string>
 #include <sstream>
 #include <vector>
-
-struct pot {
-    int x, y;
-};
-
-class rct;
-pot newPot(int, int);
-pot randPot(int, int, int, int);
-rct * newRect(pot, pot);
-bool isTaken(std::string);
-int randInt(int, int);
-int getInt(std::string, int, int);
-std::string getStr(std::string);
-void pPot(pot);
-void pRct(rct *);
+#include "main.h"
 
 std::vector<rct *> rcts;
 
@@ -95,7 +81,6 @@ void pRct(rct * re) {
     std::cout << std::endl;
 }
 
-
 int main() {
     srand(time(NULL));
     int numRect = getInt("Number of rectangles to generate (0-25): ", 0, 25);
@@ -116,7 +101,7 @@ int main() {
 
         switch (getInt("Choice: ", 1, 8)) {
             case 1:
-                for (rct *i : rcts) {pRct(i);}
+                for (rct * i : rcts) {pRct(i);}
                 break;
 
             case 2:
