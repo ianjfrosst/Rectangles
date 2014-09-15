@@ -3,43 +3,46 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include <algorithm>
 #include "main.h"
 
 std::vector<rct *> rcts;
 
-pot newPot(int x, int y) {
-    pot res;
-    res.x = x;
-    res.y = y;
-    return res;
-}
-
-pot randPot(int minx, int maxx, int miny, int maxy) {
-    return newPot(randInt(minx, maxx), randInt(miny, maxy));
+pot * randPot(int minx, int maxx, int miny, int maxy) {
+    return new pot(randInt(minx, maxx), randInt(miny, maxy));
 }
 
 class rct {
 public:
-    rct(pot bl, pot tr, std::string n) {
-        botLeft = bl;
-        topRight = tr;
+    rct(pot * botLeft, pot * topRight, std::string n) {
+        bl = botLeft;
+        tr = topRight;
         name = n;
     };
 
-    pot botLeft, topRight;
+    ~rct(){
+        delete(bl);
+        delete(tr);
+    };
+
+    pot * bl, * tr;
     std::string name;
 };
 
-rct  * newRect(pot botLeft, pot topRight) {
-    std::string name;
-    do {
-        name = "";
-        for (int i = 0; i < 4; ++i) {
-            name += randInt(97, 122);
-        }
-    } while (isTaken(name));
-    rct * res = new rct(botLeft, topRight, name);
-    return res;
+rct * getIntersect(int i1, int i2) {
+    rct * n = rcts[i1];
+    rct * m = rcts[i2];
+
+    return nullptr;
+}
+
+rct * getUnion(int i1, int i2) {
+    rct * n = rcts[i1];
+    rct * m = rcts[i2];
+    pot * a = new pot(std::min(n->bl->x, m->bl->x), std::min(n->bl->y, m->bl->y));
+    pot * b = new pot(std::max(n->tr->x, m->tr->x), std::max(n->tr->y, n->tr->y));
+    rct * re = new rct(a, b, "");
+    return re;
 }
 
 bool isTaken(std::string name) {
@@ -47,8 +50,23 @@ bool isTaken(std::string name) {
     return false;
 }
 
+bool isValid(rct * a) {
+    return a->bl->x < a->tr->x && a->bl->y < a->tr->y;
+}
+
 int randInt(int min, int max) {
     return rand() % (max - min + 1) + min;
+}
+
+std::string randName() {
+    std::string name;
+    do {
+        name = "";
+        for (int i = 0; i < 4; ++i) {
+            name += randInt(97, 122);
+        }
+    } while (isTaken(name));
+    return name;
 }
 
 int getInt(std::string query, int min, int max) {
@@ -62,6 +80,17 @@ int getInt(std::string query, int min, int max) {
     }
 }
 
+int getName(std::string query) {
+    std::string input;
+    while (true) {
+        std::cout << query;
+        std::cin >> input;
+        for (int i = 0; i < rcts.size(); ++i) {if (rcts[i]->name == input) {return i;}}
+        std::cout << "Error: \n";
+        std::cin.clear();
+    }
+}
+
 std::string getStr(std::string query) {
     std::string input;
     std::cout << query;
@@ -69,15 +98,15 @@ std::string getStr(std::string query) {
     return input;
 }
 
-void pPot(pot po) {
-    std::cout << "(" << po.x << ", " << po.y << ")";
+void pPot(pot * po) {
+    std::cout << "(" << po->x << ", " << po->y << ")";
 }
 
 void pRct(rct * re) {
     std::cout << re->name << ": ";
-    pPot(re->botLeft);
+    pPot(re->bl);
     std:: cout << " ";
-    pPot(re->topRight);
+    pPot(re->tr);
     std::cout << std::endl;
 }
 
@@ -85,11 +114,12 @@ int main() {
     srand(time(NULL));
     int numRect = getInt("Number of rectangles to generate (0-25): ", 0, 25);
     for (int i = 0; i < numRect; ++i) {
-        rcts.push_back(newRect(randPot(0, 800, 0, 600), randPot(0, 800, 0, 600)));
+        pot * a = randPot(0, 800-1, 0, 600-1);
+        pot * b = randPot(a->x+1, 800, a->y+1, 600);
+        rcts.push_back(new rct(a, b, randName()));
     }
 
     while (true) {
-        std::cout << "Menu:\n";
         std::cout << "1) Display all rectangles\n";
         std::cout << "2) Create a rectangle\n";
         std::cout << "3) Delete a rectangle\n";
@@ -99,25 +129,55 @@ int main() {
         std::cout << "7) Point in rectangle\n";
         std::cout << "8) Quit\n";
 
+        int ind1, ind2;
+        rct * re;
+        std::string name;
+
         switch (getInt("Choice: ", 1, 8)) {
             case 1:
                 for (rct * i : rcts) {pRct(i);}
                 break;
 
             case 2:
-
+                do {
+                    name = getStr("Enter a name for the new rectangle: ");
+                } while (isTaken(name));
+                while (true) {
+                    re = new rct(new pot(getInt("Bottom left x", 0, 800-1), getInt("Botton left y", 1, 800)),
+                            new pot(getInt("Top right x", 1, 800), getInt("Top right y", 1, 600)), name);
+                    if (isValid(re)) {
+                        break;
+                    } else {
+                        std::cout << "Error: Rectangle invalid";
+                        delete(re);
+                    }
+                }
+                rcts.push_back(re);
                 break;
 
             case 3:
-
+                ind1 = getName("Enter the name of the rectangle to delete: ");
+                rcts.erase(rcts.begin()+ind1);
                 break;
 
             case 4:
-
+                ind1 = getName("Enter the name of rectangle 1: ");
+                ind2 = getName("Enter the name of rectangle 2: ");
+                re = getIntersect(ind1, ind2);
+                if (re != nullptr) {
+                    pRct(re);
+                } else {
+                    std::cout << "Rectangles do not intersect\n";
+                }
+                delete(re);
                 break;
 
             case 5:
-
+                ind1 = getName("Enter the name of rectangle 1: ");
+                ind2 = getName("Enter the name of rectangle 2: ");
+                re = getUnion(ind1, ind2);
+                pRct(re);
+                delete(re);
                 break;
 
             case 6:
@@ -133,7 +193,6 @@ int main() {
 
             default:
                 break;
-
 
         }
     }
