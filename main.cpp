@@ -56,7 +56,7 @@ rct * getUnion(int i1, int i2) {
     rct * n = rcts[i1];
     rct * m = rcts[i2];
     pot * a = new pot(std::min(n->bl->x, m->bl->x), std::min(n->bl->y, m->bl->y));
-    pot * b = new pot(std::max(n->tr->x, m->tr->x), std::max(n->tr->y, n->tr->y));
+    pot * b = new pot(std::max(n->tr->x, m->tr->x), std::max(n->tr->y, m->tr->y));
     rct * re = new rct(a, b, "");
     return re;
 }
@@ -161,8 +161,8 @@ int main() {
                 do {
                     name = getStr("Enter a name for the new rectangle: ");
                 } while (isTaken(name));
-                a = new pot(getInt("Bottom left x", 0, 800-1), getInt("Botton left y", 1, 800));
-                b = new pot(getInt("Top right x", a->x+1, 800), getInt("Top right y", a->y+1, 600));
+                a = new pot(getInt("Bottom left x: ", 0, 800-1), getInt("Bottom left y: ", 0, 800));
+                b = new pot(getInt("Top right x: ", a->x+1, 800), getInt("Top right y: ", a->y+1, 600));
                 rcts.push_back(new rct(a, b, name));
                 break;
 
@@ -199,18 +199,18 @@ int main() {
                 ind1 = getName("Enter name of rectangle: ");
                 a = new pot(getInt("Enter x of point: ", 0, 800), getInt("Enter y of point: ", 0, 600));
                 if (ptInRect(a, rcts[ind1])) {
-                    std::cout << "Point is in rectangle";
+                    std::cout << "Point is in rectangle\n";
                 } else {
-                    std::cout << "Point is not in rectangle";
+                    std::cout << "Point is not in rectangle\n";
                 }
                 break;
 
             case 8:
+                for (rct * i : rcts) {delete(i);}
                 return 0;
 
             default:
                 break;
-
         }
     }
 }
