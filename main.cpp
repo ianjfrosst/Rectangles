@@ -1,5 +1,4 @@
 #include <iostream>
-#include <time.h>
 #include <string>
 #include <sstream>
 #include <vector>
@@ -33,7 +32,24 @@ rct * getIntersect(int i1, int i2) {
     rct * n = rcts[i1];
     rct * m = rcts[i2];
 
-    return nullptr;
+    if (!(n->bl->x <= m->tr->x && n->tr->x >= m->bl->x && n->bl->y <= m->tr->y && n->tr->y >= m->bl->y)) return nullptr;
+
+    std::vector<int> xVec, yVec;
+
+    xVec.push_back(n->bl->x);
+    xVec.push_back(n->tr->x);
+    xVec.push_back(m->bl->x);
+    xVec.push_back(m->tr->x);
+
+    yVec.push_back(n->bl->y);
+    yVec.push_back(n->tr->y);
+    yVec.push_back(m->bl->y);
+    yVec.push_back(m->tr->y);
+
+    std::sort(xVec.begin(), xVec.end());
+    std::sort(yVec.begin(), yVec.end());
+
+    return new rct(new pot(xVec[2], yVec[2]), new pot(xVec[3], yVec[3]), "");
 }
 
 rct * getUnion(int i1, int i2) {
@@ -45,13 +61,17 @@ rct * getUnion(int i1, int i2) {
     return re;
 }
 
+bool nameComp(rct * i, rct * j) {
+    return std::strcmp(i->name.c_str(), j->name.c_str()) < 0;
+}
+
 bool isTaken(std::string name) {
     for (rct * i : rcts) {if (name == i->name) {return true;}}
     return false;
 }
 
-bool isValid(rct * a) {
-    return a->bl->x < a->tr->x && a->bl->y < a->tr->y;
+bool ptInRect(pot * p, rct * r) {
+    return r->bl->x <= p->x && p->x <= r->tr->x && r->bl->y <= p->y && p->y <= r->tr->y;
 }
 
 int randInt(int min, int max) {
@@ -62,9 +82,7 @@ std::string randName() {
     std::string name;
     do {
         name = "";
-        for (int i = 0; i < 4; ++i) {
-            name += randInt(97, 122);
-        }
+        for (int i = 0; i < 4; ++i) {name += randInt(97, 122);}
     } while (isTaken(name));
     return name;
 }
@@ -75,7 +93,7 @@ int getInt(std::string query, int min, int max) {
         std::cout << query;
         std::cin >> input;
         if (std::cin.good()) {if (min <= input && input <= max) {return input;}}
-        std::cout << "Error: input invalid\n";
+        std::cout << "Error: Input invalid\n";
         std::cin.clear();
     }
 }
@@ -86,7 +104,7 @@ int getName(std::string query) {
         std::cout << query;
         std::cin >> input;
         for (int i = 0; i < rcts.size(); ++i) {if (rcts[i]->name == input) {return i;}}
-        std::cout << "Error: \n";
+        std::cout << "Error: Input invalid\n";
         std::cin.clear();
     }
 }
@@ -130,6 +148,7 @@ int main() {
         std::cout << "8) Quit\n";
 
         int ind1, ind2;
+        pot * a, * b;
         rct * re;
         std::string name;
 
@@ -142,17 +161,9 @@ int main() {
                 do {
                     name = getStr("Enter a name for the new rectangle: ");
                 } while (isTaken(name));
-                while (true) {
-                    re = new rct(new pot(getInt("Bottom left x", 0, 800-1), getInt("Botton left y", 1, 800)),
-                            new pot(getInt("Top right x", 1, 800), getInt("Top right y", 1, 600)), name);
-                    if (isValid(re)) {
-                        break;
-                    } else {
-                        std::cout << "Error: Rectangle invalid";
-                        delete(re);
-                    }
-                }
-                rcts.push_back(re);
+                a = new pot(getInt("Bottom left x", 0, 800-1), getInt("Botton left y", 1, 800));
+                b = new pot(getInt("Top right x", a->x+1, 800), getInt("Top right y", a->y+1, 600));
+                rcts.push_back(new rct(a, b, name));
                 break;
 
             case 3:
@@ -181,11 +192,17 @@ int main() {
                 break;
 
             case 6:
-
+                std::sort(rcts.begin(), rcts.end(), nameComp);
                 break;
 
             case 7:
-
+                ind1 = getName("Enter name of rectangle: ");
+                a = new pot(getInt("Enter x of point: ", 0, 800), getInt("Enter y of point: ", 0, 600));
+                if (ptInRect(a, rcts[ind1])) {
+                    std::cout << "Point is in rectangle";
+                } else {
+                    std::cout << "Point is not in rectangle";
+                }
                 break;
 
             case 8:
